@@ -1,38 +1,4 @@
-services:
-  db_api:
-    container_name: network_monitor_db_api
-    build: 
-      context: ./Network_Monitor_API
-      dockerfile: Dockerfile
-    restart: unless-stopped
-    env_file:
-      - .env
-    ports:
-      - "8000:8000"
-    environment:
-
-    depends_on:
-      - db_main
-      - db_system_usage
-    networks:
-      - networkMonitor-network
-
-  nn_api:
-    container_name: network_monitor_nn_api
-    build:
-      context: ./Network_Monitor
-      dockerfile: Dockerfile
-    restart: unless-stopped
-    env_file:
-      - .env
-    environment:
-
-    depends_on:
-      - db_main
-    networks:
-      - networkMonitor-network
-    
-  
+services:  
   db_main:
     image: postgres:16
     container_name: network_monitor_db_main
@@ -44,7 +10,7 @@ services:
       - ./networkMonitor_dbMain:/var/lib/postgresql/data
     restart: unless-stopped
     ports: 
-      - "5432:5432"
+      - "5433:5432"
     networks:
       - networkMonitor-network
     healthcheck:
@@ -64,7 +30,7 @@ services:
       - ./networkMonitor_dbSystemUsage:/var/lib/postgresql/data
     restart: unless-stopped
     ports: 
-      - "5433:5432"
+      - "5434:5432"
     networks:
       - networkMonitor-network
     healthcheck:
@@ -72,6 +38,24 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  api:
+    build:
+      context: ./Network_Monitor_API
+      dockerfile: Dockerfile
+    container_name: network_monitor_api
+    environment:
+      InternalApi__ApiKey: ${INTERNAL_API_KEY}
+    ports:
+      - "8080:8080"
+    depends_on:
+      db_main:
+        condition: service_healthy
+      db_system_usage:
+        condition: service_healthy
+    networks:
+      - networkMonitor-network
+    restart: unless-stopped
 
 volumes:
   networkMonitor_dbMain:

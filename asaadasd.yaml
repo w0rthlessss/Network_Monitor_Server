@@ -1,0 +1,81 @@
+services:
+  db_api:
+    container_name: network_monitor_db_api
+    build: 
+      context: ./Network_Monitor_API
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    environment:
+
+    depends_on:
+      - db_main
+      - db_system_usage
+    networks:
+      - networkMonitor-network
+
+  nn_api:
+    container_name: network_monitor_nn_api
+    build:
+      context: ./Network_Monitor
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+
+    depends_on:
+      - db_main
+    networks:
+      - networkMonitor-network
+    
+  
+  db_main:
+    image: postgres:16
+    container_name: network_monitor_db_main
+    environment:
+      POSTGRES_DB: ${DB_MAIN}
+      POSTGRES_USER: ${DB_MAIN_USER}
+      POSTGRES_PASSWORD: ${DB_MAIN_PASSWORD}
+    volumes:
+      - ./networkMonitor_dbMain:/var/lib/postgresql/data
+    restart: unless-stopped
+    ports: 
+      - "5432:5432"
+    networks:
+      - networkMonitor-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_MAIN_USER} -d ${DB_MAIN}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  db_system_usage:
+    image: postgres:16
+    container_name: network_monitor_db_system_usage
+    environment:
+      POSTGRES_DB: ${DB_SYS_USAGE}
+      POSTGRES_USER: ${DB_SYS_USAGE_USER}
+      POSTGRES_PASSWORD: ${DB_SYS_USAGE_PASSWORD}
+    volumes:
+      - ./networkMonitor_dbSystemUsage:/var/lib/postgresql/data
+    restart: unless-stopped
+    ports: 
+      - "5433:5432"
+    networks:
+      - networkMonitor-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_SYS_USAGE_USER} -d ${DB_SYS_USAGE}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  networkMonitor_dbMain:
+  networkMonitor_dbSystemUsage:
+networks:
+  networkMonitor-network:
+    driver: bridge
