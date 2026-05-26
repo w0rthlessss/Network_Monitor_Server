@@ -1,2 +1,2 @@
 # Network_Monitor_Server
-Server part for diplom project
+Server part for diploma project
