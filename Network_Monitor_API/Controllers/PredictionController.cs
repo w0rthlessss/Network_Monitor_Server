@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Network_Monitor_API.DTO;
 using Network_Monitor_API.Services;
@@ -6,6 +7,7 @@ namespace Network_Monitor_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class PredictionController : ControllerBase
     {
         private readonly PredictionService _predictionService;
@@ -30,6 +32,7 @@ namespace Network_Monitor_API.Controllers
         public async Task<IActionResult> GetByConnectionId(int connectionId) =>
             Ok(await _predictionService.GetPredictionsByConnectionIdAsync(connectionId));
 
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] PredictionDTO dto)
         {
@@ -37,6 +40,7 @@ namespace Network_Monitor_API.Controllers
             return result ? NoContent() : NotFound();
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

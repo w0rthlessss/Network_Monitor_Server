@@ -6,6 +6,7 @@
         public int UserId { get; set; }
         public string Metrics { get; set; } = null!;
         public string ModelPath { get; set; } = null!;
+        public bool IsActive { get; set; }
 
         public virtual User User { get; set; } = null!;
         public virtual ICollection<Prediction> Predictions { get; set; } = new List<Prediction>();

@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Network_Monitor_API.DTO;
 using Network_Monitor_API.Filters;
+using Network_Monitor_API.Hubs;
 using Network_Monitor_API.Models.MainDBModels;
 using Network_Monitor_API.Models.SystemUsageDBModels;
 using Network_Monitor_API.Services;
@@ -16,17 +18,23 @@ namespace Network_Monitor_API.Controllers
         private readonly PredictionService _predictionService;
         private readonly AlertsService _alertsService;
         private readonly SystemUsageService _systemUsageService;
+        private readonly ModelService _modelService;
+        private readonly IHubContext<MonitorHub> _hub;
 
         public InternalController(
             ConnectionService connectionService,
             PredictionService predictionService,
             AlertsService alertsService,
-            SystemUsageService systemUsageService)
+            SystemUsageService systemUsageService,
+            ModelService modelService,
+            IHubContext<MonitorHub> hub)
         {
             _connectionService = connectionService;
             _predictionService = predictionService;
             _alertsService = alertsService;
             _systemUsageService = systemUsageService;
+            _modelService = modelService;
+            _hub = hub;
         }
 
         // POST internal/traffic
@@ -63,6 +71,23 @@ namespace Network_Monitor_API.Controllers
 
             await _predictionService.CreateNewPredictionRecordAsync(prediction);
 
+            await _hub.Clients.All.SendAsync("ReceiveConnection", new ConnectionDTO
+            {
+                Id = connection.Id,
+                Timestamp = connection.Timestamp,
+                SrcIP = connection.SrcIP,
+                DstIP = connection.DstIP,
+                SrcPort = connection.SrcPort,
+                DstPort = connection.DstPort,
+                Protocol = connection.Protocol,
+                Service = connection.Service,
+                Duration = connection.Duration,
+                SrcBytes = connection.SrcBytes,
+                DstBytes = connection.DstBytes,
+                PredictionResult = prediction.Result,
+                PredictionConfidence = prediction.Confidence
+            });
+
             if (request.AlertDescription != null)
             {
                 var alert = new Alert
@@ -73,9 +98,61 @@ namespace Network_Monitor_API.Controllers
                     Timestamp = DateTime.UtcNow
                 };
                 await _alertsService.CreateNewAlertAsync(alert);
+
+                await _hub.Clients.All.SendAsync("ReceiveAlert", new AlertDTO
+                {
+                    Id = alert.Id,
+                    ConnectionId = alert.ConnectionId,
+                    Description = alert.Description,
+                    Resolved = alert.Resolved,
+                    Timestamp = alert.Timestamp
+                });
             }
 
             return Ok();
+        }
+
+        // POST internal/models
+        // Вызывается Python-сервисом после успешного обучения новой модели
+        [HttpPost("models")]
+        public async Task<IActionResult> CreateModel([FromBody] InternalCreateModelRequest request)
+        {
+            var model = new Network_Monitor_API.Models.MainDBModels.Model
+            {
+                UserId = request.UserId,
+                Metrics = request.Metrics,
+                ModelPath = request.ModelPath,
+                IsActive = false
+            };
+
+            var ok = await _modelService.CreateModelAsync(model);
+            if (!ok) return BadRequest();
+
+            var dto = await _modelService.GetModelByIdAsync(model.Id);
+            await _hub.Clients.All.SendAsync("ReceiveModel", dto);
+
+            return CreatedAtAction(nameof(CreateModel), new { id = model.Id }, dto);
+        }
+
+        // PATCH internal/models/{id}
+        // Вызывается Python-сервисом после дообучения существующей модели
+        [HttpPatch("models/{id}")]
+        public async Task<IActionResult> UpdateModel(int id, [FromBody] InternalUpdateModelRequest request)
+        {
+            var dto = await _modelService.UpdateModelAsync(id, request.Metrics, request.ModelPath);
+            if (dto == null) return NotFound();
+
+            await _hub.Clients.All.SendAsync("ReceiveModel", dto);
+            return Ok(dto);
+        }
+
+        // GET internal/active-model
+        // Вызывается Python-сервисом при старте для восстановления активной модели
+        [HttpGet("active-model")]
+        public async Task<IActionResult> GetActiveModel()
+        {
+            var model = await _modelService.GetActiveModelAsync();
+            return model == null ? NotFound() : Ok(model);
         }
 
         // POST internal/system-usage
@@ -93,6 +170,16 @@ namespace Network_Monitor_API.Controllers
             };
 
             await _systemUsageService.CreateRecordAsync(record);
+
+            await _hub.Clients.All.SendAsync("ReceiveSystemUsage", new SystemUsageDTO
+            {
+                Timestamp = record.Timestamp,
+                CpuUsage = record.CpuUsage,
+                MemoryUsage = record.MemoryUsage,
+                NetworkUsage = record.NetworkUsage,
+                ActiveConnections = record.ActiveConnections
+            });
+
             return Ok();
         }
     }

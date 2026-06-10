@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Network_Monitor_API.DTO;
 using Network_Monitor_API.Services;
@@ -6,6 +7,7 @@ namespace Network_Monitor_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ConnectionController : ControllerBase
     {
         private readonly ConnectionService _connectionService;
@@ -16,8 +18,10 @@ namespace Network_Monitor_API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll() =>
-            Ok(await _connectionService.GetAllConnectionsAsync());
+        public async Task<IActionResult> GetAll(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 50) =>
+            Ok(await _connectionService.GetConnectionsPagedAsync(page, pageSize));
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
@@ -26,6 +30,7 @@ namespace Network_Monitor_API.Controllers
             return connection == null ? NotFound() : Ok(connection);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] ConnectionDTO dto)
         {
@@ -33,6 +38,7 @@ namespace Network_Monitor_API.Controllers
             return result ? NoContent() : NotFound();
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

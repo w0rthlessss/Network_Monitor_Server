@@ -103,6 +103,54 @@ namespace Network_Monitor_API.Services
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<PagedResult<ConnectionDTO>> GetConnectionsPagedAsync(int page, int pageSize)
+        {
+            page = Math.Max(1, page);
+            pageSize = Math.Clamp(pageSize, 1, 200);
+
+            var query = _context.Connections.OrderByDescending(c => c.Timestamp);
+
+            var total = await query.CountAsync();
+
+            var items = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(c => new
+                {
+                    c.Id, c.Timestamp, c.SrcIP, c.DstIP, c.SrcPort, c.DstPort,
+                    c.Protocol, c.Service, c.Duration, c.SrcBytes, c.DstBytes,
+                    LatestPrediction = c.Predictions
+                        .OrderByDescending(p => p.Timestamp)
+                        .Select(p => new { p.Result, p.Confidence })
+                        .FirstOrDefault()
+                })
+                .Select(x => new ConnectionDTO
+                {
+                    Id = x.Id,
+                    Timestamp = x.Timestamp,
+                    SrcIP = x.SrcIP,
+                    DstIP = x.DstIP,
+                    SrcPort = x.SrcPort,
+                    DstPort = x.DstPort,
+                    Protocol = x.Protocol,
+                    Service = x.Service,
+                    Duration = x.Duration,
+                    SrcBytes = x.SrcBytes,
+                    DstBytes = x.DstBytes,
+                    PredictionResult = x.LatestPrediction != null && x.LatestPrediction.Result,
+                    PredictionConfidence = x.LatestPrediction != null ? x.LatestPrediction.Confidence : 0.0
+                })
+                .ToListAsync();
+
+            return new PagedResult<ConnectionDTO>
+            {
+                Items = items,
+                TotalCount = total,
+                Page = page,
+                PageSize = pageSize
+            };
+        }
+
         public async Task<bool> MakeNewConnectionRecordAsync(Connection _connection)
         {
             if (_connection == null)

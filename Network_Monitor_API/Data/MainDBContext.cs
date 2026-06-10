@@ -60,6 +60,7 @@ namespace Network_Monitor_API.Data
                 e.HasKey(e => e.Id);
                 e.Property(m => m.Metrics).IsRequired();
                 e.Property(m => m.ModelPath).IsRequired();
+                e.Property(m => m.IsActive).HasDefaultValue(false);
                 e.HasOne(m => m.User)
                     .WithMany(u => u.Models)
                     .HasForeignKey(m => m.UserId)

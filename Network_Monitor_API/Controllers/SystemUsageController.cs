@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Network_Monitor_API.Services;
 
@@ -5,6 +6,7 @@ namespace Network_Monitor_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class SystemUsageController : ControllerBase
     {
         private readonly SystemUsageService _systemUsageService;

@@ -55,6 +55,9 @@ nunit-*.xml
 
 env
 .env
+Migrations/
+
+.vs/
 
 # Docker PostgreSQL data volumes
 networkMonitor_dbMain/
