@@ -69,6 +69,16 @@ namespace Network_Monitor_API.Services
             return true;
         }
 
+        public async Task<bool> ChangePasswordAsync(int id, string newPassword)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null) return false;
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
         public async Task<bool> DeleteAsync(int id)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);

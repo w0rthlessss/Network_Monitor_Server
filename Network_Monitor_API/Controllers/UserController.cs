@@ -35,6 +35,13 @@ namespace Network_Monitor_API.Controllers
             return result ? Ok() : Conflict("Пользователь с таким логином уже существует.");
         }
 
+        [HttpPatch("{id}/password")]
+        public async Task<IActionResult> ChangePassword(int id, [FromBody] ChangePasswordRequest request)
+        {
+            var result = await _userService.ChangePasswordAsync(id, request.NewPassword);
+            return result ? NoContent() : NotFound();
+        }
+
         [HttpPatch("{id}/status")]
         public async Task<IActionResult> UpdateStatus(int id, [FromBody] string status)
         {

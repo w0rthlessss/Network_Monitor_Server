@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Network_Monitor_API.Data;
 using Network_Monitor_API.Hubs;
+using Network_Monitor_API.Models.MainDBModels;
 using Network_Monitor_API.Services;
 
 namespace Network_Monitor_API
@@ -106,6 +107,7 @@ namespace Network_Monitor_API
                 mainDbContext.Database.Migrate();
                 var sysUsageDbContext = scope.ServiceProvider.GetRequiredService<SystemUsageDbContext>();
                 sysUsageDbContext.Database.Migrate();
+
             }
 
             app.UseHttpsRedirection();

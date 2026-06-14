@@ -30,5 +30,13 @@ namespace Network_Monitor_API.Controllers
         [HttpGet("day")]
         public async Task<IActionResult> GetDay() =>
             Ok(await _systemUsageService.GetDayDuringRecordsAsync());
+
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var result = await _systemUsageService.DeleteAsync(id);
+            return result ? NoContent() : NotFound();
+        }
     }
 }

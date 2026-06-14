@@ -53,6 +53,16 @@ namespace Network_Monitor_API.Services
             return true;
         }
 
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var record = await _context.SystemUsages.FirstOrDefaultAsync(s => s.SystemUsageId == id);
+            if (record == null) return false;
+
+            _context.SystemUsages.Remove(record);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
         public async Task<List<SystemUsageDTO>> GetDayDuringRecordsAsync()
         {
             var since = DateTime.UtcNow.AddHours(-24);
