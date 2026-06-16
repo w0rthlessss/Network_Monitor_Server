@@ -68,7 +68,7 @@ namespace Network_Monitor_API.Services
             var since = DateTime.UtcNow.AddHours(-24);
             return await _context.SystemUsages
                 .Where(s => s.Timestamp >= since)
-                .OrderByDescending(s => s.Timestamp)
+                .OrderBy(s => s.Timestamp)
                 .Select(s => new SystemUsageDTO
                 {
                     Id = s.SystemUsageId,

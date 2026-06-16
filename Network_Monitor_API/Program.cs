@@ -17,9 +17,9 @@ namespace Network_Monitor_API
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddDbContext<MainDBContext>(options =>
-                options.UseNpgsql(Environment.GetEnvironmentVariable("DB_MAIN_CONNECTION_STRING")));
+                options.UseNpgsql(builder.Configuration["DB_MAIN_CONNECTION_STRING"]));
             builder.Services.AddDbContext<SystemUsageDbContext>(options =>
-                options.UseNpgsql(Environment.GetEnvironmentVariable("DB_SYS_USAGE_CONNECTION_STRING")));
+                options.UseNpgsql(builder.Configuration["DB_SYS_USAGE_CONNECTION_STRING"]));
 
             builder.Services.AddScoped<AlertsService>();
             builder.Services.AddScoped<ConnectionService>();
@@ -106,8 +106,7 @@ namespace Network_Monitor_API
                 var mainDbContext = scope.ServiceProvider.GetRequiredService<MainDBContext>();
                 mainDbContext.Database.Migrate();
                 var sysUsageDbContext = scope.ServiceProvider.GetRequiredService<SystemUsageDbContext>();
-                sysUsageDbContext.Database.Migrate();
-
+                sysUsageDbContext.Database.Migrate();                
             }
 
             app.UseHttpsRedirection();

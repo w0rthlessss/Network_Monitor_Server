@@ -1,0 +1,14 @@
+services:
+  network_monitor_python_service:
+    network_mode: ""
+    networks:
+      - networkMonitor-network
+    ports:
+      - "8000:8000"
+    environment:
+      ASPNET_BASE_URL: http://network_monitor_api:8080
+      PYTHONUNBUFFERED: "1"
+
+networks:
+  networkMonitor-network:
+    driver: bridge

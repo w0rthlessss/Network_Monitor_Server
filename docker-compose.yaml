@@ -39,7 +39,7 @@ services:
       timeout: 5s
       retries: 5
 
-  api:
+  network_monitor_api:
     build:
       context: ./Network_Monitor_API
       dockerfile: Dockerfile
@@ -60,6 +60,35 @@ services:
         condition: service_healthy
     networks:
       - networkMonitor-network
+    # network_monitor_python_service runs with network_mode: host (needed for
+    # packet capture), so it's not reachable by container name. This makes
+    # host.docker.internal resolve on native Linux Docker too (Docker Desktop
+    # already provides it).
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  network_monitor_python_service:
+    build:
+      context: ./Network_Monitor_NN_Model
+      dockerfile: Dockerfile
+    container_name: network_monitor_python
+    environment:
+      ASPNET_BASE_URL: http://localhost:8080
+      INTERNAL_API_KEY: ${INTERNAL_API_KEY}
+      CAPTURE_INTERFACE: ${CAPTURE_INTERFACE}
+      DATA_SOURCE: ${DATA_SOURCE}
+      PYTHONUNBUFFERED: "1"
+      DEFAULT_USER_ID: ${DEFAULT_USER_ID}
+      THRESHOLD_OVERRIDE: ${THRESHOLD_OVERRIDE}
+    volumes:
+      - ./Network_Monitor_NN_Model/models:/app/models
+    depends_on:
+      - network_monitor_api
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
     restart: unless-stopped
 
 volumes:

@@ -131,7 +131,7 @@ namespace Network_Monitor_API.Controllers
             var dto = await _modelService.GetModelByIdAsync(model.Id);
             await _hub.Clients.All.SendAsync("ReceiveModel", dto);
 
-            return CreatedAtAction(nameof(CreateModel), new { id = model.Id }, dto);
+            return Ok(dto);
         }
 
         // PATCH internal/models/{id}

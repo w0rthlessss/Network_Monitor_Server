@@ -62,3 +62,11 @@ Migrations/
 # Docker PostgreSQL data volumes
 networkMonitor_dbMain/
 networkMonitor_dbSystemUsage/
+
+.idea
+__pycache__
+GeneratedLabelledFlows
+
+# Python service local dev
+Network_Monitor_NN_Model/.venv/
+Network_Monitor_NN_Model/data/

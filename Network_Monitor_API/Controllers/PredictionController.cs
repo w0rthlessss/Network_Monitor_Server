@@ -32,7 +32,7 @@ namespace Network_Monitor_API.Controllers
         public async Task<IActionResult> GetByConnectionId(int connectionId) =>
             Ok(await _predictionService.GetPredictionsByConnectionIdAsync(connectionId));
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "DatabaseAdministrator")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] PredictionDTO dto)
         {
@@ -40,7 +40,7 @@ namespace Network_Monitor_API.Controllers
             return result ? NoContent() : NotFound();
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "DatabaseAdministrator")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

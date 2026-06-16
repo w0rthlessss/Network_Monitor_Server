@@ -39,7 +39,7 @@ namespace Network_Monitor_API.Controllers
             return result ? NoContent() : NotFound();
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "DatabaseAdmin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] AlertDTO dto)
         {
@@ -47,7 +47,7 @@ namespace Network_Monitor_API.Controllers
             return result ? NoContent() : NotFound();
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "DatabaseAdministrator")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

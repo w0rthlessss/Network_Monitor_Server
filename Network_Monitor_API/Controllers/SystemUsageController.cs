@@ -31,7 +31,7 @@ namespace Network_Monitor_API.Controllers
         public async Task<IActionResult> GetDay() =>
             Ok(await _systemUsageService.GetDayDuringRecordsAsync());
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "DatabaseAdministrator")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

@@ -7,7 +7,7 @@ namespace Network_Monitor_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "DatabaseAdministrator")]
     public class UserController : ControllerBase
     {
         private readonly UserService _userService;

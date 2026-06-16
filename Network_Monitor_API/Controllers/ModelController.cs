@@ -17,7 +17,7 @@ namespace Network_Monitor_API.Controllers
         {
             _modelService = modelService;
         }
-
+        [Authorize(Roles = "DatabaseAdministrator")]
         [HttpGet]
         public async Task<IActionResult> GetAll() =>
             Ok(await _modelService.GetAllModelsAsync());
@@ -29,7 +29,7 @@ namespace Network_Monitor_API.Controllers
             return model == null ? NotFound() : Ok(model);
         }
 
-        [Authorize(Roles = "Admin,Analyst")]
+        [Authorize(Roles = "MathSpecialist")]
         [HttpPatch("{id}/activate")]
         public async Task<IActionResult> Activate(int id)
         {
@@ -37,7 +37,7 @@ namespace Network_Monitor_API.Controllers
             return result ? NoContent() : NotFound();
         }
 
-        [Authorize(Roles = "Admin,Analyst")]
+        [Authorize(Roles = "MathSpecialist")]
         [HttpPost("train")]
         public async Task<IActionResult> Train([FromBody] TrainModelRequest request)
         {
@@ -57,7 +57,7 @@ namespace Network_Monitor_API.Controllers
             }
         }
 
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "MathSpecialist")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

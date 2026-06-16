@@ -1,0 +1,11 @@
+fastapi==0.137.0
+python-dotenv
+uvicorn[standard]
+httpx
+psutil
+cicflowmeter
+scapy
+scikit-learn
+numpy
+joblib
+pandas
