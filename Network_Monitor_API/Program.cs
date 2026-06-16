@@ -106,7 +106,12 @@ namespace Network_Monitor_API
                 var mainDbContext = scope.ServiceProvider.GetRequiredService<MainDBContext>();
                 mainDbContext.Database.Migrate();
                 var sysUsageDbContext = scope.ServiceProvider.GetRequiredService<SystemUsageDbContext>();
-                sysUsageDbContext.Database.Migrate();                
+                sysUsageDbContext.Database.Migrate();
+
+                var userService = scope.ServiceProvider.GetRequiredService<UserService>();
+                userService.SeedDefaultAdminIfEmptyAsync(
+                    app.Configuration["DefaultAdmin:Login"],
+                    app.Configuration["DefaultAdmin:Password"]).GetAwaiter().GetResult();
             }
 
             app.UseHttpsRedirection();

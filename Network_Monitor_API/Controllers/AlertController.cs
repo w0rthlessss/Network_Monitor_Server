@@ -39,7 +39,7 @@ namespace Network_Monitor_API.Controllers
             return result ? NoContent() : NotFound();
         }
 
-        [Authorize(Roles = "DatabaseAdmin")]
+        [Authorize(Roles = "DatabaseAdministrator")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] AlertDTO dto)
         {

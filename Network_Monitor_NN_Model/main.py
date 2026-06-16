@@ -84,11 +84,23 @@ def _spawn_flow_task(flow_dict: dict) -> None:
     asyncio.create_task(_on_flow(flow_dict))
 
 
+async def _wait_for_api(retries: int = 10, delay: float = 3.0):
+    """ASP.NET API runs DB migrations on startup before it accepts requests.
+    Retry the first call instead of crashing the whole service on a cold start."""
+    for attempt in range(1, retries + 1):
+        try:
+            return await api_client.get_active_model()
+        except Exception as exc:
+            print(f"[startup] API not ready yet ({attempt}/{retries}): {exc}")
+            await asyncio.sleep(delay)
+    return None
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await api_client.init()
 
-    active = await api_client.get_active_model()
+    active = await _wait_for_api()
     if active:
         try:
             model_obj = trainer.load(active.modelPath)

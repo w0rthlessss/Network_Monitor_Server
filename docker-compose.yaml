@@ -51,6 +51,8 @@ services:
       InternalApi__ApiKey: ${INTERNAL_API_KEY}
       Jwt__Secret: ${JWT_SECRET}
       PythonService__BaseUrl: ${PYTHON_SERVICE_URL}
+      DefaultAdmin__Login: ${DEFAULT_ADMIN_LOGIN}
+      DefaultAdmin__Password: ${DEFAULT_ADMIN_PASS}
     ports:
       - "8080:8080"
     depends_on:

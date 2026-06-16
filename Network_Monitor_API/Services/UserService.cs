@@ -8,10 +8,40 @@ namespace Network_Monitor_API.Services
     public class UserService
     {
         private readonly MainDBContext _context;
+        private readonly ILogger<UserService> _logger;
 
-        public UserService(MainDBContext context)
+        public UserService(MainDBContext context, ILogger<UserService> logger)
         {
             _context = context;
+            _logger = logger;
+        }
+
+        // Вызывается при старте приложения: если в таблице пользователей пусто,
+        // создаёт админа из учётных данных, заданных в .env (DEFAULT_ADMIN_LOGIN / DEFAULT_ADMIN_PASS).
+        public async Task SeedDefaultAdminIfEmptyAsync(string? login, string? password)
+        {
+            if (await _context.Users.AnyAsync())
+                return;
+
+            if (string.IsNullOrWhiteSpace(login) || string.IsNullOrWhiteSpace(password))
+            {
+                _logger.LogWarning(
+                    "Users table is empty but DefaultAdmin:Login/Password is not configured — skipping admin seed.");
+                return;
+            }
+
+            var admin = new User
+            {
+                Login = login,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
+                Role = "DatabaseAdministrator",
+                Status = "Offline"
+            };
+
+            await _context.Users.AddAsync(admin);
+            await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Seeded default admin user '{Login}'.", login);
         }
 
         public async Task<List<UserDTO>> GetAllAsync()
