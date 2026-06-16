@@ -55,7 +55,6 @@ nunit-*.xml
 
 env
 .env
-Migrations/
 
 .vs/
 
