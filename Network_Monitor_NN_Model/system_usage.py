@@ -6,7 +6,7 @@ import psutil
 
 from schemas import SystemUsagePayload
 
-_GB = 1024 ** 3
+_MB = 1024 ** 2
 
 
 async def run(
@@ -27,10 +27,10 @@ async def run(
         await asyncio.sleep(interval)
 
         cur_net = psutil.net_io_counters()
-        net_gb = (
+        net_mb = (
             (cur_net.bytes_sent + cur_net.bytes_recv)
             - (prev_net.bytes_sent + prev_net.bytes_recv)
-        ) / _GB
+        ) / _MB
         prev_net = cur_net
 
         try:
@@ -42,7 +42,7 @@ async def run(
             timestamp=datetime.now(timezone.utc),
             cpuUsage=psutil.cpu_percent(),
             memoryUsage=psutil.virtual_memory().percent,
-            networkUsage=round(net_gb, 9),
+            networkUsage=round(net_mb, 3),
             activeConnections=active_connections,
         )
 

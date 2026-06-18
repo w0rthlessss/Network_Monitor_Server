@@ -31,4 +31,6 @@ def predict(model, features: list[list[float]]) -> tuple[bool, float, str]:
     feat_names  = selector.selected_feature_names
     top_feature = feat_names[top_idx] if top_idx < len(feat_names) else str(top_idx)
 
-    return bool(prob >= threshold), float(prob), top_feature
+    result = bool(prob >= threshold)
+    confidence = prob if result else (1.0 - prob)
+    return result, confidence, top_feature

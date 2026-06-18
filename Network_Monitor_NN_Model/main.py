@@ -74,7 +74,7 @@ async def _process_flow(flow_dict: dict) -> None:
         TrafficRecordPayload(
             connection=conn_payload,
             prediction=prediction,
-            alertDescription=None,
+            alertDescription=f"Attack detected via {top_feature}" if result else None,
         )
     )
 
