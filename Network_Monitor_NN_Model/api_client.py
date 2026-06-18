@@ -19,7 +19,7 @@ async def init() -> None:
     _client = httpx.AsyncClient(
         base_url=ASPNET_BASE_URL,
         headers={"X-Api-Key": INTERNAL_API_KEY},
-        timeout=30.0,
+        timeout=5.0,
         trust_env=False,
     )
 

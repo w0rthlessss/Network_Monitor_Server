@@ -46,4 +46,7 @@ async def run(
             activeConnections=active_connections,
         )
 
-        await send(payload)
+        try:
+            await send(payload)
+        except Exception as exc:
+            print(f"[system_usage] send failed: {exc!r}")

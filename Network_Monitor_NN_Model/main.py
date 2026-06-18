@@ -80,8 +80,18 @@ async def _process_flow(flow_dict: dict) -> None:
 
 
 def _spawn_flow_task(flow_dict: dict) -> None:
-    """Sync callback passed to sniffer — spawns an independent Task per flow."""
     asyncio.create_task(_on_flow(flow_dict))
+
+
+async def _run_sniffer(interface: str) -> None:
+    while True:
+        try:
+            await sniffer.run_live(interface, _spawn_flow_task)
+        except asyncio.CancelledError:
+            raise
+        except Exception as exc:
+            print(f"[sniffer] crashed: {exc!r} — restarting in 5s")
+            await asyncio.sleep(5)
 
 
 async def _wait_for_api(retries: int = 10, delay: float = 3.0):
@@ -140,7 +150,7 @@ async def lifespan(app: FastAPI):
             system_usage.run(api_client.post_system_usage, interval=SYSTEM_USAGE_INTERVAL)
         ),
         asyncio.create_task(
-            sniffer.run_live(interface, _spawn_flow_task)
+            _run_sniffer(interface)
         ),
     ]
 
